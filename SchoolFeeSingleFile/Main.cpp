@@ -7,11 +7,11 @@
 #define scanf scanf_s
 #define MAX_INFONUM 100
 
-//���ڴ洢��־�Ľṹ�弰time_t����
+//用于存储日志的结构体及time_t变量
 time_t logt;
 struct tm *loglt;
 
-//�������ڴ����ѹ�����Ϣ�Ľṹ��
+//定义用于储存班费管理信息的结构体
 struct current
 {
 	int id;
@@ -25,7 +25,7 @@ struct current
 	struct tm sctime;
 };
 
-//���ڹ�궨λ��PointXY������x��yΪҪ���������������
+//用于光标定位的PointXY函数，x，y为要将光标移至的坐标
 void PointXY(int x, int y)
 {
 	COORD pos;
@@ -36,7 +36,7 @@ void PointXY(int x, int y)
 	SetConsoleCursorPosition(hOutput, pos);
 }
 
-//���ڴ�ӡ��ѹ�����Ϣ�ĺ���
+//用于打印班费管理信息的函数
 void printData(struct current sf[], int index, int pos)
 {
 	PointXY(3, pos);
@@ -60,108 +60,108 @@ void printData(struct current sf[], int index, int pos)
 }
 
 
-//ģ��1�������Ϣ¼��
+//模块1：班费信息录入
 //*******************************************************************************************
-//�����������������־�ĺ���
+//定义用于输出操作日志的函数
 void writeLogToFile(int index, int id, FILE *fp)
 {
-	//��ȡ��ǰʱ��
+	//获取当前时间
 	time(&logt);
 	loglt = localtime(&logt);
-	//��ӡ��Ϣ����־�ļ�
-	fprintf(fp, "%04d.%02d.%02d ������Ϊ%d��λ��������һ�����Ϊ%d������\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id);
+	//打印信息至日志文件
+	fprintf(fp, "%04d.%02d.%02d 在索引为%d的位置添加了一条编号为%d的数据\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id);
 }
-//¼������Ϣģ��
+//录入班费信息模块
 int inputInfo(struct current sf[], int size, FILE *fp)
 {
-	int i;							//ѭ������ʱ����
-	time_t t;						//��ȡ��ǰϵͳʱ���ñ���
-	struct tm *lt;					//��ȡ��ǰϵͳʱ��ṹ��
-	int opt = 0;					//�����û����������
+	int i;							//循环用临时变量
+	time_t t;						//获取当前系统时间用变量
+	struct tm *lt;					//获取当前系统时间结构体
+	int opt = 0;					//接收用户操作项变量
 
-									//�����Ű�
+									//导航排版
 	system("cls");
-	printf("���˵�->¼����Ϣ\n");
+	printf("主菜单->录入信息\n");
 	printf("****************************************************************************\n");
-	//��ʾ�û����������Ϣ
-	printf("�����֧��ţ�\n");
-	printf("���뻹��֧����\n");
-	printf("�����ˣ�\n");
-	printf("ԭ��\n");
-	printf("��\n");
-	printf("������\n");
-	printf("��\n");
-	printf("��ע��\n");
-	printf("ʱ��(1:ϵͳʱ��;2:�Զ���)��\n");
+	//提示用户输入相关信息
+	printf("班费收支编号：\n");
+	printf("收入还是支出：\n");
+	printf("经办人：\n");
+	printf("原因：\n");
+	printf("金额：\n");
+	printf("人数：\n");
+	printf("余额：\n");
+	printf("备注：\n");
+	printf("时间(1:系统时间;2:自定义)：\n");
 
 
-	//1.��ѱ��
+	//1.班费编号
 	do
 	{
 		PointXY(14, 2);
 		scanf("%d", &sf[size].id);
 		getchar();
 
-		//�����ṹ�����飬�ж�id�Ƿ��Ѿ�����
+		//遍历结构体数组，判断id是否已经存在
 		for (i = 0; i < size; i++)
 		{
 			if (sf[i].id == sf[size].id)
 			{
 				PointXY(14, 2);
-				printf("        <!>�������ظ�id�����������ã�");
+				printf("        <!>不允许重复id，请重新设置！");
 				sf[size].id = -1;
 			}
 		}
-	} while (sf[size].id == -1);	  //��idΪ-1���û������id���ظ��ģ�ִ��ѭ����ʹ���û���������
+	} while (sf[size].id == -1);	  //若id为-1即用户输入的id是重复的，执行循环，使得用户重新输入
 	PointXY(20, 2);
-	printf("                                     ");   //����ɾ���û����������Ϣ�Ĵ�����ʾ
+	printf("                                     ");   //用于删除用户输入错误信息的错误提示
 
-	//2.�����֧��
+	//2.收入或支出
 	while (1)
 	{
 		PointXY(14, 3);
 		gets(sf[size].type);
 
-		//�쳣�����ж�
-		if (size == 0 && !strcmp(sf[size].type, "֧��"))			//�ж��û��Ƿ��ڵ�һ�����ʵ�ʱ��������֧��
+		//异常输入判断
+		if (size == 0 && !strcmp(sf[size].type, "支出"))			//判断用户是否在第一次入帐的时候输入了支出
 		{
 			PointXY(14, 3);
-			printf("        <!>��һ�����ˣ��޷�֧�������������룡");
+			printf("        <!>第一次入账，无法支出！请重新输入！");
 		}
-		else if (!strcmp(sf[size].type, "����") || !strcmp(sf[size].type, "֧��"))	//�ж��û��Ƿ���������ȷ����Ϣ������ȷ����ѭ��
+		else if (!strcmp(sf[size].type, "收入") || !strcmp(sf[size].type, "支出"))	//判断用户是否输入了正确的信息，若正确跳出循环
 		{
 			PointXY(20, 3);
 			printf("                                     ");
 			break;
 		}
-		else	//���û�����Ĳ���ȷ��Ϣ���б�����ʾ
+		else	//对用户输入的不正确信息进行报错提示
 		{
 			PointXY(14, 3);
-			printf("        <!>����������Ч�ַ������������룡    ");
+			printf("        <!>你输入了无效字符，请重新输入！    ");
 		}
 
 	}
 
-	//3.������
+	//3.经办人
 	PointXY(8, 4);
 	gets(sf[size].name);
 
-	//4.ԭ��
+	//4.原因
 	PointXY(6, 5);
 	gets(sf[size].reason);
 
-	//5.���
+	//5.金额
 	PointXY(6, 6);
 	scanf("%d", &sf[size].amount);
 
-	//6.����
+	//6.人数
 	PointXY(6, 7);
 	getchar();
 	scanf("%d", &sf[size].count);
 
-	//7.���(�Զ�����)
+	//7.余额(自动生成)
 	PointXY(6, 8);
-	if (!strcmp(sf[size].type, "����"))
+	if (!strcmp(sf[size].type, "收入"))
 	{
 		if (size == 0)
 		{
@@ -178,249 +178,253 @@ int inputInfo(struct current sf[], int size, FILE *fp)
 	}
 	printf("%d", sf[size].balance);
 
-	//8.��ע
+	//8.备注
 	PointXY(6, 9);
 	getchar();
 	gets(sf[size].remark);
 
-	//9.ʱ��
+	//9.时间
 	PointXY(27, 10);
-	scanf("%d", &opt);				//�����û�ѡ��Ĳ�����
-	getchar();						//���ջس��ַ�
-	if (opt == 1)					//���û�����Ĳ�����Ϊ1ʱ��ȡϵͳʱ��
+	scanf("%d", &opt);				//接收用户选择的操作数
+	getchar();						//接收回车字符
+	if (opt == 1)					//当用户输入的操作数为1时获取系统时间
 	{
-		//��ȡ��ǰϵͳʱ��
+		//获取当前系统时间
 		time(&t);
 		lt = localtime(&t);
-		//����ǰϵͳʱ�丳ֵ����ǰ��ѽṹ�����
+		//将当前系统时间赋值给当前班费结构体变量
 		sf[size].sctime.tm_year = lt->tm_year;
 		sf[size].sctime.tm_mon = lt->tm_mon;
 		sf[size].sctime.tm_mday = lt->tm_mday;
 	}
-	else if (opt == 2)			 //���û�����Ĳ�����Ϊ2ʱ�����û������ʱ��
+	else if (opt == 2)			 //当用户输入的操作数为2时接收用户输入的时间
 	{
-		printf("�Զ��壺");
-		//�����û������ʱ����Ϣ
+		printf("自定义：");
+		//接受用户输入的时间信息
 		scanf("%04d.%02d.%02d", &sf[size].sctime.tm_year, &sf[size].sctime.tm_mon, &sf[size].sctime.tm_mday);
-		sf[size].sctime.tm_year -= 1900;		//�ṹ��tm�е�year������¼����1900�������ݣ�������Ӧ�Ĵ���
-		sf[size].sctime.tm_mon -= 1;			//�ṹ��tm�е�mon������¼���Ǵ�0��11���·ݣ����������Ӧ�Ĵ���
-		getchar();			//����ǰ��scanf���������Ļس�����
+		sf[size].sctime.tm_year -= 1900;		//结构体tm中的year变量记录的是1900后多少年份，将其相应的处理
+		sf[size].sctime.tm_mon -= 1;			//结构体tm中的mon变量记录的是从0至11的月份，将其进行相应的处理
+		getchar();			//捕获前面scanf遗留下来的回车按键
 	}
 
-	//�����Ű�
+	//导航排版
 	system("cls");
-	printf("���˵�->�����Ϣ->�ɹ�¼�����Ϣ\n");
+	printf("主菜单->浏览信息->成功录入的信息\n");
 	printf("****************************************************************************\n");
-	printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+	printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 	printData(sf, size, 3);
 
-	//�����ӵĲ�����¼��¼���ļ�ϵͳ��
+	//将添加的操作记录记录到文件系统中
 	writeLogToFile(size, sf[size].id, fp);
 
-	//��ʾ�û�����������ز˵�
-	printf("\n��������ص����˵���\n");
+	//提示用户按任意键返回菜单
+	printf("\n按任意键回到主菜单！\n");
 	system("pause>nul");
 	return ++size;
 }
 
-//ģ��2�������Ϣ���
+//模块2：班费信息浏览
 //*******************************************************************************************
-//��������Ϣģ��
+//浏览班费信息模块
 void showInfo(struct current sf[], int size)
 {
-	int i;								//����ѭ����������ʱ����
-	//�����Ű�
+	int i;								//用于循环操作的临时变量
+	//导航排版
 	system("cls");
-	printf("���˵�->�����Ϣ\n");
+	printf("主菜单->浏览信息\n");
 	printf("****************************************************************************\n");
 
-	//��ӡȫ����Ѽ�¼��Ϣ
-	if (size == 0)						//�жϽṹ�������Ƿ�Ϊ��
+	//打印全部班费记录信息
+	if (size == 0)						//判断结构体数组是否为空
 	{
-		printf("��ǰϵͳû��¼���κ���Ϣ��\n");
+		printf("当前系统没有录入任何信息！\n");
 	}
-	else								//�����ṹ�����飬����ӡ����Ϣ
+	else								//遍历结构体数组，并打印其信息
 	{
-		printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+		printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 		for (i = 0; i < size; i++)
 		{
 			printData(sf, i, i + 3);
 		}
 	}
 
-	//��ʾ�û�����������ز˵�
-	printf("\n����������������˵���\n");
+	//提示用户按任意键返回菜单
+	printf("\n请点击任意键返回主菜单！\n");
 	system("pause>nul");
 	return;
 }
 
-//ģ��3�������Ϣ��ѯ
+//模块3：班费信息查询
 //*******************************************************************************************
-//��ѯ�����Ϣģ��
+//查询班费信息模块
 void searchInfo(struct current sf[], int size)
 {
-	char opt = 0;							//ѡ��Ҫִ�еĲ�����
-	int searchId;							//����Ҫ��ѯ�İ�ѱ���
-	int foundCount;						//������ҵ�����Ϣ����
-	int i;									//ѭ������ʱ����
-	char searchName[20];					//����Ҫ��ѯ�ľ�����
-	struct tm compareFrom;				//���ڴ洢ʱ�䷶Χ��ʼ�Ľṹ��
-	struct tm compareTo;					//���ڴ洢ʱ�䷶Χ�����Ľṹ��
+	char opt = 0;							//选择要执行的操作，
+	int searchId;							//储存要查询的班费编码
+	int foundCount;						//储存查找到的信息数量
+	int i;									//循环用临时变量
+	char searchName[20];					//储存要查询的经办人
+	struct tm compareFrom;				//用于存储时间范围开始的结构体
+	struct tm compareTo;					//用于存储时间范围结束的结构体
+	int isFromTrue = 0,isToTrue = 0;				//用于判断条件是否符号
 
-											//�����Ű�
+											//导航排版
 	system("cls");
-	printf("���˵�->��ѯ��Ϣ\n");
+	printf("主菜单->查询信息\n");
 	printf("****************************************************************************\n");
-	//ѡ������
-	printf("(a) ���հ�ѱ�����в�ѯ\n");
-	printf("(b) ���հ��ʱ�䷶Χ���в�ѯ\n");
-	printf("(c) ���վ����˽��в�ѯ\n");
-	printf("\n�������ѯ��ʽ��Ӧ����ĸ��\n");
+	//选项内容
+	printf("(a) 按照班费编码进行查询\n");
+	printf("(b) 按照班费时间范围进行查询\n");
+	printf("(c) 按照经办人进行查询\n");
+	printf("\n请输入查询方式对应的字母：\n");
 
-	//��ȡ����Ĳ�������
-	//	getchar();								//���ڽ������˵����������Ļس��ַ�
-	opt = getchar();						//�����û�����Ĳ�����
+	//获取输入的操作序数
+	//	getchar();								//用于接收主菜单操作传来的回车字符
+	opt = getchar();						//接收用户输出的操作数
 
-											//ʵ���û������Ĺ���
+											//实现用户操作的功能
 	switch (opt)
 	{
-		//����ѱ����ѯ(a)
+		//按班费编码查询(a)
 	case 'a':
-		//�����Ű�
+		//导航排版
 		system("cls");
-		printf("���˵�->��ѯ��Ϣ->���հ�ѱ����ѯ\n");
+		printf("主菜单->查询信息->按照班费编码查询\n");
 		printf("****************************************************************************\n");
-		//��ʾ�û�Ҫ���������
-		printf("������Ҫ��ѯ�İ�ѱ��룺\n");
-		//��ʽ�Ű�
+		//提示用户要输入的内容
+		printf("输入需要查询的班费编码：\n");
+		//格式排版
 		printf("****************************************************************************\n");
-		printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+		printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 
-		//������ƶ�����������Ҫ��ѯ�İ�ѱ��룺���ĺ󷽣������û��������ֵ
+		//将光标移动至“输入需要查询的班费编码：”的后方，接收用户输入的数值
 		PointXY(24, 2);
 		scanf("%d", &searchId);
 		getchar();
 
-		//��ʼ����ر���
+		//初始化相关变量
 		foundCount = 0;
 
 
-		//�����ṹ�����飬Ѱ�������а��һ�µ�Ԫ�أ�����ӡ������
+		//遍历结构体数组，寻找数组中班费一致的元素，并打印其数据
 		for (i = 0; i < size; i++)
 		{
 			if (sf[i].id == searchId)
 			{
-				printData(sf, i, foundCount + 5);		//��ӡ���ҵ�������
+				printData(sf, i, foundCount + 5);		//打印查找到的数据
 				foundCount++;
 
 				break;
 			}
 		}
-		if (foundCount == 0)								//�ж��Ƿ���ҵ�����
+		if (foundCount == 0)								//判断是否查找到数据
 		{
-			//��ӡ��ʾ�û�û�в��ҵ���Ϣ
+			//打印提示用户没有查找到信息
 			PointXY(0, 4);
-			printf("����Ҫ���ҵ���Ϣ�����ڡ�                                                    ");
+			printf("您所要查找的信息不存在。                                                    ");
 		}
 		break;
-		//���հ��ʱ�䷶Χ��ѯ(b)
+		//按照班费时间范围查询(b)
 	case 'b':
-		//�����Ű�
+		//导航排版
 		system("cls");
-		printf("���˵�->��ѯ��Ϣ->���հ��ʱ�䷶Χ���в�ѯ\n");
+		printf("主菜单->查询信息->按照班费时间范围进行查询\n");
 		printf("****************************************************************************\n");
-		//��ʾ�û����������Ϣ
-		printf("������Ҫ��ѯ�Ŀ�ʼʱ�䣺\n");
-		printf("������Ҫ��ѯ�Ľ���ʱ�䣺\n");
-		//��ʽ�Ű�
+		//提示用户输入相关信息
+		printf("输入需要查询的开始时间：\n");
+		printf("输入需要查询的结束时间：\n");
+		//格式排版
 		printf("****************************************************************************\n");
-		printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
-		//�����������������Ҫ��ѯ�Ŀ�ʼʱ�䣺���󣬽����û����뿪ʼ��ʱ�䷶Χ
+		printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
+		//将光标移至“输入需要查询的开始时间：”后，接收用户输入开始的时间范围
 		PointXY(24, 2);
 		scanf("%04d.%02d.%02d", &compareFrom.tm_year, &compareFrom.tm_mon, &compareFrom.tm_mday);
 		getchar();
-		//�����������������Ҫ��ѯ�Ľ���ʱ�䣺�����󣬽����û����������ʱ�䷶Χ
+		//将光标移至“输入需要查询的结束时间：：”后，接收用户输入结束的时间范围
 		PointXY(24, 3);
 		scanf("%04d.%02d.%02d", &compareTo.tm_year, &compareTo.tm_mon, &compareTo.tm_mday);
 		getchar();
 
-		//����ر�����ֵ���е���
+		//对相关变量的值进行调整
 		compareTo.tm_year -= 1900;
 		compareFrom.tm_year -= 1900;
 		compareTo.tm_mon -= 1;
 		compareFrom.tm_mon -= 1;
 		foundCount = 0;
 
-		//�����ṹ�����飬Ѱ�������з���ʱ�䷶Χ�ڵ�Ԫ�أ�����ӡ������
+		//遍历结构体数组，寻找数组中符合时间范围内的元素，并打印其数据
 		for (i = 0; i < size; i++)
 		{
+			isFromTrue = 0;
+			isToTrue = 0;
 			if (sf[i].sctime.tm_year > compareFrom.tm_year && sf[i].sctime.tm_year < compareTo.tm_year)
 			{
-				printData(sf, i, foundCount + 6);
-				foundCount++;
+				isFromTrue = 1;
+				isToTrue = 1;
 			}
-			else if (sf[i].sctime.tm_year == compareFrom.tm_year)
+			if (sf[i].sctime.tm_year == compareFrom.tm_year)
 			{
 				if (sf[i].sctime.tm_mon > compareFrom.tm_mon)
 				{
-					printData(sf, i, foundCount + 6);
-					foundCount++;
+					isFromTrue = 1;
 				}
 				else if (sf[i].sctime.tm_mon == compareFrom.tm_mon)
 				{
 					if (sf[i].sctime.tm_mday >= compareFrom.tm_mday)
 					{
-						printData(sf, i, foundCount + 6);
-						foundCount++;
+						isFromTrue = 1;
 					}
 				}
 			}
-			else if (sf[i].sctime.tm_year == compareTo.tm_year)
+			if (sf[i].sctime.tm_year == compareTo.tm_year)
 			{
 				if (sf[i].sctime.tm_mon < compareTo.tm_mon)
 				{
-					printData(sf, i, foundCount + 6);
-					foundCount++;
+					isToTrue = 1;
 				}
 				else if (sf[i].sctime.tm_mon == compareTo.tm_mon)
 				{
 					if (sf[i].sctime.tm_mday <= compareTo.tm_mday)
 					{
-						printData(sf, i, foundCount + 6);
-						foundCount++;
+						isToTrue = 1;
 					}
 				}
 			}
 
+			if (isFromTrue && isToTrue)
+			{
+				printData(sf, i, foundCount + 6);
+				foundCount++;
+			}
 		}
 		if (foundCount == 0)
 		{
 			PointXY(0, 5);
-			printf("����Ҫ���ҵ���Ϣ�����ڡ�                                                    ");
+			printf("您所要查找的信息不存在。                                                    ");
 		}
 
 
 		break;
-		//���վ����˽��в�ѯ(c)
+		//按照经办人进行查询(c)
 	case 'c':
-		//�����Ű�
+		//导航排版
 		system("cls");
-		printf("���˵�->��ѯ��Ϣ->���վ����˽��в�ѯ\n");
+		printf("主菜单->查询信息->按照经办人进行查询\n");
 		printf("****************************************************************************\n");
-		//��ʾ�û����������Ϣ
-		printf("������Ҫ��ѯ�ľ��������ƣ�\n");
-		//��ʽ�Ű�
+		//提示用户输入相关信息
+		printf("输入需要查询的经办人名称：\n");
+		//格式排版
 		printf("****************************************************************************\n");
-		printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
-		//������ƶ�����������Ҫ��ѯ�ľ��������ƣ����󣬽����û��������Ϣ
+		printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
+		//将光标移动至“输入需要查询的经办人名称：”后，接收用户输入的信息
 		PointXY(26, 2);
 		getchar();
 		gets(searchName);
 
-		//����ر�����ֵ���е���
+		//对相关变量的值进行调整
 		foundCount = 0;
 
-		//�����ṹ�������У�Ѱ�������о�����һ�µ�Ԫ�أ�����ӡ������
+		//遍历结构体数组中，寻找数组中经纪人一致的元素，并打印其数据
 		for (i = 0; i < size; i++)
 		{
 			if (!strcmp(sf[i].name, searchName))
@@ -432,26 +436,26 @@ void searchInfo(struct current sf[], int size)
 		if (foundCount == 0)
 		{
 			PointXY(0, 4);
-			printf("����Ҫ���ҵ���Ϣ�����ڡ�                                                    ");
+			printf("您所要查找的信息不存在。                                                    ");
 		}
 		break;
 	default:
-		printf("����������Ч���ַ������������룺\n");
+		printf("你输入了无效的字符，请重新输入：\n");
 		break;
 	}
 	system("pause>nul");
 }
 
-//ģ��4�������Ϣ�޸�
+//模块4：班费信息修改
 //*******************************************************************************************
-//�����������������־�ĺ���
+//定义用于输出操作日志的函数
 void writeLogToFile_change(int index, int id, char *type, char *from, char *to, FILE *fp)
 {
 	time(&logt);
 	loglt = localtime(&logt);
-	fprintf(fp, "%04d.%02d.%02d ������Ϊ%d,���Ϊ%d��%s��%s�޸�Ϊ%s\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id, type, from, to);
+	fprintf(fp, "%04d.%02d.%02d 将索引为%d,编号为%d的%s从%s修改为%s\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id, type, from, to);
 }
-//�޸İ����Ϣģ��
+//修改班费信息模块
 void changeInfo(struct current sf[], int size, FILE *fp)
 {
 	int id;
@@ -464,9 +468,9 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 	int tmp;
 
 	system("cls");
-	printf("���˵�->�޸���Ϣ\n");
+	printf("主菜单->修改信息\n");
 	printf("****************************************************************************\n");
-	printf("������Ҫ�޸ĵİ�ѱ��룺");
+	printf("输入需要修改的班费编码：");
 	PointXY(24, 2);
 	//	getchar();
 	scanf("%d", &id);
@@ -476,7 +480,7 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 	{
 		if (sf[i].id == id)
 		{
-			printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+			printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 			printData(sf, i, count + 5);
 			count++;
 			break;
@@ -484,11 +488,11 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 	}
 	if (count == 0)
 	{
-		printf("����Ҫ���ҵ���Ϣ�����ڡ�\n");
+		printf("您所要查找的信息不存在。\n");
 	}
 	else
 	{
-		printf("�Ƿ�����޸ģ�(y/n)\n");
+		printf("是否进行修改？(y/n)\n");
 		getchar();
 		if (opt = getchar() == 'y')
 		{
@@ -496,52 +500,52 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 			do
 			{
 				system("cls");
-				printf("���˵�->�޸���Ϣ->���޸ĵı��Ϊ:%d\n", id);
+				printf("主菜单->修改信息->所修改的编号为:%d\n", id);
 				printf("****************************************************************************\n");
-				printf("��ѡ������һ������޸ģ�\n");
-				printf("1) ��ѱ���\n");
-				printf("2) ���뻹��֧��\n");
-				printf("3) ������\n");
-				printf("4) ԭ��\n");
-				printf("5) ��ÿλͬѧ��\n");
-				printf("6) ����\n");
-				printf("7) ��ע\n");
-				printf("8) ʱ��\n");
+				printf("请选择其中一项进行修改：\n");
+				printf("1) 班费编码\n");
+				printf("2) 收入还是支出\n");
+				printf("3) 经办人\n");
+				printf("4) 原因\n");
+				printf("5) 金额（每位同学）\n");
+				printf("6) 人数\n");
+				printf("7) 备注\n");
+				printf("8) 时间\n");
 
-				printf("\n����ѡ��");
+				printf("\n输入选择：");
 				scanf("%d", &choice);
 				getchar();
 				switch (choice)
 				{
 				case 1:
-					printf("�������µİ�ѱ��룺");
+					printf("请输入新的班费编码：");
 					itoa(sf[i].id, logFrom, 10);
 					tmp = sf[i].id;
 					scanf("%d", &sf[i].id);
 					getchar();
 					itoa(sf[i].id, logTo, 10);
-					writeLogToFile_change(i, tmp, "��ѱ���", logFrom, logTo, fp);
+					writeLogToFile_change(i, tmp, "班费编码", logFrom, logTo, fp);
 
 					break;
 				case 2:
 
 					while (1)
 					{
-						printf("�������µ����ͣ�");
+						printf("请输入新的类型：");
 						strcpy(logFrom, sf[i].type);
 						gets(sf[i].type);
 						strcpy(logTo, sf[i].type);
-						writeLogToFile_change(i, sf[i].id, "����", logFrom, logTo, fp);
+						writeLogToFile_change(i, sf[i].id, "类型", logFrom, logTo, fp);
 
-						if (i == 0 && !strcmp(sf[i].type, "֧��"))
+						if (i == 0 && !strcmp(sf[i].type, "支出"))
 						{
-							printf("\n<!>��һ�����ˣ��޷�֧�������������룡\n");
+							printf("\n<!>第一次入账，无法支出！请重新输入！\n");
 						}
-						else if (!strcmp(sf[i].type, "����") || !strcmp(sf[i].type, "֧��"))
+						else if (!strcmp(sf[i].type, "收入") || !strcmp(sf[i].type, "支出"))
 						{
 							for (j = i; j < size; j++)
 							{
-								if (!strcmp(sf[j].type, "����"))
+								if (!strcmp(sf[j].type, "收入"))
 								{
 									if (j == 0)
 									{
@@ -561,34 +565,34 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 						}
 						else
 						{
-							printf("\n<!>����������Ч�ַ������������룡\n");
+							printf("\n<!>你输入了无效字符，请重新输入！\n");
 						}
 					}
 					break;
 				case 3:
-					printf("�������µľ����ˣ�");
+					printf("请输入新的经办人：");
 					strcpy(logFrom, sf[i].name);
 					gets(sf[i].name);
 					strcpy(logTo, sf[i].name);
-					writeLogToFile_change(i, sf[i].id, "������", logFrom, logTo, fp);
+					writeLogToFile_change(i, sf[i].id, "经办人", logFrom, logTo, fp);
 					break;
 				case 4:
-					printf("�������µ�ԭ��");
+					printf("请输入新的原因：");
 					strcpy(logFrom, sf[i].reason);
 					gets(sf[i].reason);
 					strcpy(logTo, sf[i].reason);
-					writeLogToFile_change(i, sf[i].id, "ԭ��", logFrom, logTo, fp);
+					writeLogToFile_change(i, sf[i].id, "原因", logFrom, logTo, fp);
 					break;
 				case 5:
-					printf("�������µĽ��(ÿλͬѧ)��");
+					printf("请输入新的金额(每位同学)：");
 					itoa(sf[i].amount, logFrom, 10);
 					scanf("%d", &sf[i].amount);
 					getchar();
 					itoa(sf[i].amount, logTo, 10);
-					writeLogToFile_change(i, sf[i].id, "���", logFrom, logTo, fp);
+					writeLogToFile_change(i, sf[i].id, "金额", logFrom, logTo, fp);
 					for (j = i; j < size; j++)
 					{
-						if (!strcmp(sf[j].type, "����"))
+						if (!strcmp(sf[j].type, "收入"))
 						{
 							if (j == 0)
 							{
@@ -606,15 +610,15 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 					}
 					break;
 				case 6:
-					printf("�������µ�������");
+					printf("请输入新的人数：");
 					itoa(sf[i].count, logFrom, 10);
 					scanf("%d", &sf[i].count);
 					itoa(sf[i].count, logTo, 10);
-					writeLogToFile_change(i, sf[i].id, "����", logFrom, logTo, fp);
+					writeLogToFile_change(i, sf[i].id, "人数", logFrom, logTo, fp);
 					getchar();
 					for (j = i; j < size; j++)
 					{
-						if (!strcmp(sf[j].type, "����"))
+						if (!strcmp(sf[j].type, "收入"))
 						{
 							if (j == 0)
 							{
@@ -632,74 +636,74 @@ void changeInfo(struct current sf[], int size, FILE *fp)
 					}
 					break;
 				case 7:
-					printf("�������µı�ע��");
+					printf("请输入新的备注：");
 					strcpy(logFrom, sf[i].remark);
 					gets(sf[i].remark);
 					strcpy(logTo, sf[i].remark);
-					writeLogToFile_change(i, sf[i].id, "��ע", logFrom, logTo, fp);
+					writeLogToFile_change(i, sf[i].id, "备注", logFrom, logTo, fp);
 					break;
 				case 8:
-					printf("�������µ�ʱ�䣺");
+					printf("请输入新的时间：");
 					time(&logt);
 					loglt = localtime(&logt);
-					fprintf(fp, "%d.%d.%d ������Ϊ%d,���Ϊ%d��ʱ���%d.%d.%d", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, i, sf[i].id, (sf[i].sctime.tm_year + 1900), (sf[i].sctime.tm_mon + 1), sf[i].sctime.tm_mday);
+					fprintf(fp, "%d.%d.%d 将索引为%d,编号为%d的时间从%d.%d.%d", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, i, sf[i].id, (sf[i].sctime.tm_year + 1900), (sf[i].sctime.tm_mon + 1), sf[i].sctime.tm_mday);
 					scanf("%04d.%02d.%02d", &sf[i].sctime.tm_year, &sf[i].sctime.tm_mon, &sf[i].sctime.tm_mday);
 					getchar();
 
 					sf[i].sctime.tm_year -= 1900;
 					sf[i].sctime.tm_mon -= 1;
-					fprintf(fp, "�޸�Ϊ%d.%d.%d\n", (sf[i].sctime.tm_year + 1900), (sf[i].sctime.tm_mon + 1), sf[i].sctime.tm_mday);
+					fprintf(fp, "修改为%d.%d.%d\n", (sf[i].sctime.tm_year + 1900), (sf[i].sctime.tm_mon + 1), sf[i].sctime.tm_mday);
 					break;
 				default:
 					break;
 				}
-				printf("�Ƿ���������ֶ�(y/n)��");
+				printf("是否更新其他字段(y/n)：");
 			} while (opt = getchar() == 'y');
 			system("cls");
-			printf("���˵�->�޸���Ϣ->�޸ĺ����Ϣ\n");
+			printf("主菜单->修改信息->修改后的信息\n");
 			printf("****************************************************************************\n");
-			printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+			printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 			printData(sf, i, count + 3);
 		}
 	}
 }
 
 
-//ģ��5�������Ϣɾ��
+//模块5：班费信息删除
 //*******************************************************************************************
-//�����������������־�ĺ���
+//定义用于输出操作日志的函数
 void writeLogToFile_delete(int index, int id, FILE *fp)
 {
 	time(&logt);
 	loglt = localtime(&logt);
-	fprintf(fp, "%04d.%02d.%02d ������Ϊ%d��λ��ɾ����һ�����Ϊ%d������\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id);
+	fprintf(fp, "%04d.%02d.%02d 在索引为%d的位置删除了一条编号为%d的数据\n", ((loglt->tm_year) + 1900), ((loglt->tm_mon) + 1), loglt->tm_mday, index, id);
 }
-//ɾ�������Ϣģ��
+//删除班费信息模块
 int delInfo(struct current sf[], int size, FILE *fp)
 {
-	int id;				//���ڴ洢�û������Ҫɾ���İ�ѱ��
-	int i, j;			//����ѭ������ʱ����
-	char opt = 0;		//���ڴ洢�û��Ĳ�����
+	int id;				//用于存储用户输入的要删除的班费编号
+	int i, j;			//用于循环的临时变量
+	char opt = 0;		//用于存储用户的操作数
 
-	//�����Ű�
+	//导航排版
 	system("cls");
-	printf("���˵�->ɾ����Ϣ\n");
+	printf("主菜单->删除信息\n");
 	printf("****************************************************************************\n");
-	//��ʾ�û����������Ϣ
-	printf("������Ҫɾ���İ�ѱ�ţ�");
+	//提示用户输入相关信息
+	printf("输入需要删除的班费编号：");
 	scanf("%d", &id);
 	printf("****************************************************************************\n");
 	for (i = 0; i < size; i++)
 	{
 		if (sf[i].id == id)
 		{
-			printf("��ѱ���  ��/֧  ������      ԭ��      ���  ����  ���     ʱ��       ��ע  \n");
+			printf("班费编码  收/支  经办人      原因      金额  人数  余额     时间       备注  \n");
 			printData(sf, i, 5);
 			break;
 		}
 	}
 	printf("****************************************************************************\n");
-	printf("�Ƿ����ɾ����");
+	printf("是否进行删除：");
 	getchar();
 	if (opt = getchar() == 'y')
 	{
@@ -716,9 +720,9 @@ int delInfo(struct current sf[], int size, FILE *fp)
 
 
 
-//ģ��6���ļ���дģ��
+//模块6：文件读写模块
 //*******************************************************************************************
-//�ļ�����ģ��
+//文件读入模块
 int readFromFile(struct current * sf)
 {
 	FILE *pFile;
@@ -730,7 +734,7 @@ int readFromFile(struct current * sf)
 	}
 	else
 	{
-		printf("��⵽�б������Ϣ���Ƿ���(y/n):");
+		printf("检测到有保存的信息，是否导入(y/n):");
 		if (getchar() != 'y')
 		{
 			return 0;
@@ -753,33 +757,33 @@ int readFromFile(struct current * sf)
 	fclose(pFile);
 	return size;
 }
-//�ļ�д��ģ��
+//文件写入模块
 void saveToFile(current sf[], int size)
 {
-	printf("\n���ڱ��桭��\n");
+	printf("\n正在保存……\n");
 	FILE *pFile;
 	int i;
 	if ((pFile = fopen("SchoolFee.dat", "wb")) == NULL)
 	{
-		printf("�޷����ļ�");
+		printf("无法打开文件");
 		return;
 	}
 	if (fwrite(&size, sizeof(int), 1, pFile) != 1)
 	{
-		printf("�ļ��޷�д��");
+		printf("文件无法写入");
 	}
 	for (i = 0; i < size; i++)
 	{
 		if (fwrite(&sf[i], sizeof(current), 1, pFile) != 1)
 		{
-			printf("�ļ��޷�д��");
+			printf("文件无法写入");
 		}
 	}
 	fclose(pFile);
 	return;
 }
 
-//������
+//主函数
 int main()
 {
 	struct current schoolFee[MAX_INFONUM];
@@ -793,16 +797,16 @@ int main()
 	{
 
 		system("cls");
-		printf("���˵�\n");
+		printf("主菜单\n");
 		printf("****************************************************************************\n");
-		printf("��ӭʹ�ð�ѹ���ϵͳ!\n\n");//9
-		printf("(1) ¼������Ϣ\n");
-		printf("(2) ������а����Ϣ\n");
-		printf("(3) ��ѯ�����Ϣ\n");
-		printf("(4) �޸İ����Ϣ\n");
-		printf("(5) ɾ�������Ϣ\n");
-		printf("(0) �˳�ϵͳ\n");
-		printf("\n����������Ҫִ�еĲ��������ֱ�ţ�\n");
+		printf("欢迎使用班费管理系统!\n\n");//9
+		printf("(1) 录入班费信息\n");
+		printf("(2) 浏览所有班费信息\n");
+		printf("(3) 查询班费信息\n");
+		printf("(4) 修改班费信息\n");
+		printf("(5) 删除班费信息\n");
+		printf("(0) 退出系统\n");
+		printf("\n请输入你所要执行的操作的数字编号：\n");
 
 		scanf("%d", &opt);
 		getchar();
@@ -828,7 +832,7 @@ int main()
 			size = delInfo(schoolFee, size, fp);
 			break;
 		default:
-			printf("����������Ч�����֣�");
+			printf("您输入了无效的数字！");
 			break;
 		}
 	} while (opt != 0);
